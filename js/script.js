@@ -14,41 +14,26 @@ btnBTT.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-/* ========== THEME TOGGLE ========== */
-const btnTema  = document.getElementById('theme-toggle');
-const bodyEl   = document.body;
-const temaSimpan = localStorage.getItem('tema-porto') || 'light';
-if (temaSimpan === 'dark') {
-    bodyEl.setAttribute('data-theme', 'dark');
-    btnTema.innerHTML = '<i class="fas fa-sun"></i>';
-}
-btnTema.addEventListener('click', () => {
-    const temaSkrg = bodyEl.getAttribute('data-theme');
-    if (temaSkrg === 'dark') {
-        bodyEl.removeAttribute('data-theme');
-        btnTema.innerHTML = '<i class="fas fa-moon"></i>';
-        localStorage.setItem('tema-porto', 'light');
-    } else {
-        bodyEl.setAttribute('data-theme', 'dark');
-        btnTema.innerHTML = '<i class="fas fa-sun"></i>';
-        localStorage.setItem('tema-porto', 'dark');
-    }
-});
+/* ========== TEMA DARK PERMANEN - TIDAK ADA TOGGLE ========== */
+// Tidak ada kode untuk mengganti tema karena tema sudah dark permanen di CSS.
+// Fungsi theme toggle dihapus agar tidak error.
 
 /* ========== MOBILE MENU ========== */
 const btnHamburger = document.getElementById('menu-toggle');
 const menuMobile   = document.getElementById('mobile-menu');
-btnHamburger.addEventListener('click', () => {
-    menuMobile.classList.toggle('open');
-    const isMbuka = menuMobile.classList.contains('open');
-    btnHamburger.innerHTML = isMbuka ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-});
-menuMobile.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
-        menuMobile.classList.remove('open');
-        btnHamburger.innerHTML = '<i class="fas fa-bars"></i>';
+if (btnHamburger && menuMobile) {
+    btnHamburger.addEventListener('click', () => {
+        menuMobile.classList.toggle('open');
+        const isMbuka = menuMobile.classList.contains('open');
+        btnHamburger.innerHTML = isMbuka ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
     });
-});
+    menuMobile.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+            menuMobile.classList.remove('open');
+            btnHamburger.innerHTML = '<i class="fas fa-bars"></i>';
+        });
+    });
+}
 
 /* ========== ACTIVE NAV LINK ========== */
 const semuaSeksi = document.querySelectorAll('section[id]');
@@ -103,20 +88,24 @@ let slideAktif  = 0;
 const totalSlide = 3;
 let timerAuto;
 
-function pindahSlide(idx) {
-    slideAktif = (idx + totalSlide) % totalSlide;
-    slider.style.transform = `translateX(-${slideAktif * 100}%)`;
-    dots.forEach((d, i) => d.classList.toggle('active', i === slideAktif));
+if (slider && dots.length) {
+    function pindahSlide(idx) {
+        slideAktif = (idx + totalSlide) % totalSlide;
+        slider.style.transform = `translateX(-${slideAktif * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === slideAktif));
+    }
+    if (btnPrev && btnNext) {
+        btnPrev.addEventListener('click', () => { pindahSlide(slideAktif - 1); resetAuto(); });
+        btnNext.addEventListener('click', () => { pindahSlide(slideAktif + 1); resetAuto(); });
+    }
+    dots.forEach(d => d.addEventListener('click', () => {
+        pindahSlide(parseInt(d.getAttribute('data-i')));
+        resetAuto();
+    }));
+    function mulaiAuto()  { timerAuto = setInterval(() => pindahSlide(slideAktif + 1), 5000); }
+    function resetAuto()  { clearInterval(timerAuto); mulaiAuto(); }
+    mulaiAuto();
 }
-btnPrev.addEventListener('click', () => { pindahSlide(slideAktif - 1); resetAuto(); });
-btnNext.addEventListener('click', () => { pindahSlide(slideAktif + 1); resetAuto(); });
-dots.forEach(d => d.addEventListener('click', () => {
-    pindahSlide(parseInt(d.getAttribute('data-i')));
-    resetAuto();
-}));
-function mulaiAuto()  { timerAuto = setInterval(() => pindahSlide(slideAktif + 1), 5000); }
-function resetAuto()  { clearInterval(timerAuto); mulaiAuto(); }
-mulaiAuto();
 
 /* ========== COUNTER ANIMATION ========== */
 const counterEls = document.querySelectorAll('.stat-number');
@@ -208,30 +197,32 @@ if (robotContainer && typeof lottie !== 'undefined') {
 const listKata = ['Full-Stack Developer', 'UI / UX Designer', 'Problem Solver', 'Creative Thinker', 'Freelancer Berpengalaman'];
 let idxKata = 0, idxChar = 0, hapus = false;
 const elKetik = document.getElementById('typed-text');
-function animasiKetik() {
-    const kata = listKata[idxKata];
-    if (hapus) {
-        elKetik.textContent = kata.substring(0, idxChar - 1);
-        idxChar--;
-        if (idxChar === 0) {
-            hapus = false;
-            idxKata = (idxKata + 1) % listKata.length;
-            setTimeout(animasiKetik, 380);
-            return;
+if (elKetik) {
+    function animasiKetik() {
+        const kata = listKata[idxKata];
+        if (hapus) {
+            elKetik.textContent = kata.substring(0, idxChar - 1);
+            idxChar--;
+            if (idxChar === 0) {
+                hapus = false;
+                idxKata = (idxKata + 1) % listKata.length;
+                setTimeout(animasiKetik, 380);
+                return;
+            }
+            setTimeout(animasiKetik, 55);
+        } else {
+            elKetik.textContent = kata.substring(0, idxChar + 1);
+            idxChar++;
+            if (idxChar === kata.length) {
+                hapus = true;
+                setTimeout(animasiKetik, 1900);
+                return;
+            }
+            setTimeout(animasiKetik, 88);
         }
-        setTimeout(animasiKetik, 55);
-    } else {
-        elKetik.textContent = kata.substring(0, idxChar + 1);
-        idxChar++;
-        if (idxChar === kata.length) {
-            hapus = true;
-            setTimeout(animasiKetik, 1900);
-            return;
-        }
-        setTimeout(animasiKetik, 88);
     }
+    setTimeout(animasiKetik, 800);
 }
-setTimeout(animasiKetik, 800);
 
 /* ========== AI CHATBOT (LOCAL ONLY - NO API, NO GROQ) ========== */
 (function() {
@@ -427,36 +418,38 @@ const demoModal = document.getElementById('demo-modal');
 const modalBody = document.getElementById('modal-body');
 const modalClose = document.getElementById('modal-close');
 
-document.querySelectorAll('.btn-demo-video').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const videoUrl = btn.getAttribute('data-video');
-        modalBody.innerHTML = `
-            <h3>Demo Proyek</h3>
-            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
-                <iframe src="${videoUrl}?autoplay=1" 
-                        style="position:absolute;top:0;left:0;width:100%;height:100%;" 
-                        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            </div>
-            <p style="margin-top:16px;text-align:center;">Klik di luar untuk menutup.</p>
-        `;
-        demoModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+if (demoModal && modalBody && modalClose) {
+    document.querySelectorAll('.btn-demo-video').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const videoUrl = btn.getAttribute('data-video');
+            modalBody.innerHTML = `
+                <h3>Demo Proyek</h3>
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+                    <iframe src="${videoUrl}?autoplay=1" 
+                            style="position:absolute;top:0;left:0;width:100%;height:100%;" 
+                            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top:16px;text-align:center;">Klik di luar untuk menutup.</p>
+            `;
+            demoModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
     });
-});
 
-modalClose.addEventListener('click', () => {
-    demoModal.classList.remove('active');
-    document.body.style.overflow = '';
-    modalBody.innerHTML = ''; // Stop video
-});
-demoModal.addEventListener('click', (e) => {
-    if (e.target === demoModal) {
+    modalClose.addEventListener('click', () => {
         demoModal.classList.remove('active');
         document.body.style.overflow = '';
         modalBody.innerHTML = '';
-    }
-});
+    });
+    demoModal.addEventListener('click', (e) => {
+        if (e.target === demoModal) {
+            demoModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalBody.innerHTML = '';
+        }
+    });
+}
 
 /* ========== SMOOTH SCROLL ========== */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
