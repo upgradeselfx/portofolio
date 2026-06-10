@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio — Mohamad Rosyadi</title>
 
     <!-- Google Fonts -->
@@ -13,8 +13,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Three.js untuk Background 3D -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+	<!-- Three.js untuk Background 3D -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Lottie Web untuk animasi robot -->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>-->
 
     <!-- CSS Eksternal -->
     <link rel="stylesheet" href="css/style.css">
@@ -39,13 +42,11 @@
                 <li><a href="#about">About Me</a></li>
                 <li><a href="#skills">Keahlian</a></li>
                 <li><a href="#projects">Project</a></li>
-                <li><a href="#certificates">Certificates</a></li>
+				<li><a href="#certificates">Certificates</a></li>
                 <li><a href="#contact">Kontak</a></li>
             </ul>
             <div class="nav-controls">
-                <!--<button id="theme-toggle" title="Ganti Tema" aria-label="Toggle dark mode">
-                    <i class="fas fa-moon"></i>
-                </button>-->
+                
                 <button id="menu-toggle" title="Menu" aria-label="Toggle mobile menu">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -60,12 +61,13 @@
     <a href="#about">About Me</a>
     <a href="#skills">Keahlian</a>
     <a href="#projects">Project</a>
-    <a href="#certificates">Certificates</a>
+	<a href="#certificates">Certificates</a>
     <a href="#contact">Kontak</a>
 </div>
 
 <!-- ========== HERO SECTION DENGAN ROBOT 3D ========== -->
 <section id="hero" style="position: relative; overflow: hidden; min-height: 100vh;">
+    <!-- Canvas untuk robot 3D di background hero -->
     <div id="hero-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
     
     <div class="hero-blob blob-1"></div>
@@ -109,14 +111,15 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
+// Inisialisasi canvas khusus hero
 const container = document.getElementById('hero-canvas');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(container.clientWidth, container.clientHeight);
-renderer.setClearColor(0x000000, 0);
+renderer.setClearColor(0x000000, 0); // transparan biar blob & teks kebaca
 container.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = null;
+scene.background = null; // transparan
 
 const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
 camera.position.set(4, 2, 5);
@@ -131,6 +134,7 @@ controls.autoRotate = true;
 controls.autoRotateSpeed = 1.5;
 controls.target.set(0, 1.2, 0);
 
+// Lighting
 const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
 scene.add(ambientLight);
 const mainLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -144,6 +148,7 @@ const backLight = new THREE.PointLight(0xffaa33, 0.3);
 backLight.position.set(0, 2, -4);
 scene.add(backLight);
 
+// Ground tipis biar ada bayangan
 const groundPlane = new THREE.Mesh(
     new THREE.CircleGeometry(5, 16),
     new THREE.MeshStandardMaterial({ color: 0x111822, metalness: 0.5, roughness: 0.4, transparent: true, opacity: 0.3 })
@@ -153,10 +158,12 @@ groundPlane.position.y = -0.3;
 groundPlane.receiveShadow = true;
 scene.add(groundPlane);
 
+// Grid dekoratif
 const gridHelper = new THREE.GridHelper(12, 20, 0x33aaff, 0x225588);
 gridHelper.position.y = -0.25;
 scene.add(gridHelper);
 
+// Partikel apung
 const particleCount = 600;
 const particlesGeo = new THREE.BufferGeometry();
 const particlePositions = new Float32Array(particleCount * 3);
@@ -170,6 +177,7 @@ const particleMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.05, tran
 const particlesSys = new THREE.Points(particlesGeo, particleMat);
 scene.add(particlesSys);
 
+// Load Robot
 let mixer, robot, clock = new THREE.Clock();
 
 const loader = new GLTFLoader();
@@ -189,7 +197,7 @@ loader.load('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpre
     });
     robot.scale.setScalar(0.7);
     robot.position.y = -0.3;
-    robot.position.x = 2.2;
+	robot.position.x = 2.2;
     scene.add(robot);
 
     mixer = new THREE.AnimationMixer(robot);
@@ -199,6 +207,7 @@ loader.load('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpre
     }
 });
 
+// Resize handler
 window.addEventListener('resize', () => {
     const w = container.clientWidth;
     const h = container.clientHeight;
@@ -207,16 +216,18 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
 });
 
+// Animasi
 function animateHero() {
     requestAnimationFrame(animateHero);
     const delta = clock.getDelta();
     if (mixer) mixer.update(delta);
-    controls.update();
+    controls.update(); // update autoRotate
     particlesSys.rotation.y += 0.002;
     renderer.render(scene, camera);
 }
 animateHero();
 
+// Hapus preloader kalau masih ada
 window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (preloader) preloader.style.display = 'none';
@@ -231,8 +242,8 @@ window.addEventListener('load', () => {
                 <div class="about-img-wrap">
                     <div class="about-deco"></div>
                     <div class="about-frame">
-                        <img src="assets/foto-profile.png" alt="Mohamad Rosyadi" class="profile-img">
-                    </div>
+    					<img src="assets/foto-profile.png" alt="Mohamad Rosyadi" class="profile-img">
+					</div>
                     <div class="exp-badge">
                         <span class="exp-num">1+</span>
                         <span class="exp-txt">Tahun Ekspierens</span>
@@ -242,9 +253,9 @@ window.addEventListener('load', () => {
             <div class="about-text reveal delay-2">
                 <span class="section-label">Tentang Saya</span>
                 <h2 class="section-title">Desainer &amp; Developer<br>Berbasis AI</h2>
-                <p>Saya adalah seorang <strong>web developer & UI/UX designer</strong> yang memanfaatkan <strong>kecerdasan buatan (AI)</strong> sebagai asisten utama dalam setiap proses kreatif dan teknis.</p>
-                <p>Dengan menggabungkan keahlian desain, koding, dan kemampuan mengarahkan AI (prompt engineering), saya menciptakan pengalaman digital yang bermakna, fungsional, dan elegan secara visual - dengan kecepatan dan presisi yang jauh lebih tinggi.</p>
-                <p>Setiap proyek yang saya kerjakan dibantu oleh model AI canggih (seperti Claude, GPT, dan lainnya) untuk riset, debugging, optimasi kode, hingga pembuatan konten. Bukan sekadar "menggunakan AI", tapi <strong>berkolaborasi dengan AI</strong> untuk hasil terbaik.</p>
+                    <p>Saya adalah seorang <strong>web developer & UI/UX designer</strong> yang memanfaatkan <strong>kecerdasan buatan (AI)</strong> sebagai asisten utama dalam setiap proses kreatif dan teknis.</p>
+    				<p>Dengan menggabungkan keahlian desain, koding, dan kemampuan mengarahkan AI (prompt engineering), saya menciptakan pengalaman digital yang bermakna, fungsional, dan elegan secara visual - dengan kecepatan dan presisi yang jauh lebih tinggi.</p>
+    				<p>Setiap proyek yang saya kerjakan dibantu oleh model AI canggih (seperti Claude, GPT, dan lainnya) untuk riset, debugging, optimasi kode, hingga pembuatan konten. Bukan sekadar "menggunakan AI", tapi <strong>berkolaborasi dengan AI</strong> untuk hasil terbaik.</p>
                 <div class="about-details">
                     <div><div class="detail-label">Nama Lengkap</div><div class="detail-value">Mohamad Rosyadi</div></div>
                     <div><div class="detail-label">Email</div><div class="detail-value">mohamadrosyad1927@gmail.com</div></div>
@@ -266,6 +277,7 @@ window.addEventListener('load', () => {
             <p class="section-desc reveal delay-2" style="margin:0 auto">Teknologi dan tools yang saya gunakan sehari-hari dalam proses pengembangan produk digital.</p>
         </div>
         <div class="skills-grid">
+            <!-- Skill cards -->
             <div class="skill-card reveal">
                 <div class="skill-header">
                     <div class="skill-name"><div class="skill-icon"><i class="fab fa-html5"></i></div>HTML &amp; CSS</div>
@@ -329,8 +341,12 @@ window.addEventListener('load', () => {
         </div>
 
         <div class="proj-grid">
+
+            <!-- Proyek 1: Toko Online -->
             <div class="proj-card reveal" data-category="web" data-tilt>
-                <div class="proj-thumb slideshow" id="slideshow-proj1"></div>
+                <div class="proj-thumb slideshow" id="slideshow-proj1">
+                    <!-- Gambar akan diisi otomatis oleh JS -->
+                </div>
                 <div class="proj-info">
                     <span class="proj-tag">E-Commerce</span>
                     <h3 class="proj-title">Toko Online Modern</h3>
@@ -349,8 +365,11 @@ window.addEventListener('load', () => {
                 </div>
             </div>
 
+            <!-- Proyek 2: Dashboard -->
             <div class="proj-card reveal delay-1" data-category="web" data-tilt>
-                <div class="proj-thumb slideshow" id="slideshow-proj2"></div>
+                <div class="proj-thumb slideshow" id="slideshow-proj2">
+                    <!-- Gambar akan diisi otomatis oleh JS -->
+                </div>
                 <div class="proj-info">
                     <span class="proj-tag">Dashboard</span>
                     <h3 class="proj-title">Dashboard Analitik</h3>
@@ -369,8 +388,11 @@ window.addEventListener('load', () => {
                 </div>
             </div>
 
+            <!-- Proyek 3: Mobile App -->
             <div class="proj-card reveal delay-2" data-category="mobile" data-tilt>
-                <div class="proj-thumb slideshow" id="slideshow-proj3"></div>
+                <div class="proj-thumb slideshow" id="slideshow-proj3">
+                    <!-- Gambar akan diisi otomatis oleh JS -->
+                </div>
                 <div class="proj-info">
                     <span class="proj-tag">Mobile App</span>
                     <h3 class="proj-title">Aplikasi Manajemen Tugas</h3>
@@ -388,6 +410,7 @@ window.addEventListener('load', () => {
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
@@ -402,7 +425,9 @@ window.addEventListener('load', () => {
         </div>
         <div class="cert-grid">
             <div class="cert-card reveal" data-tilt>
-                <div class="cert-icon"><i class="fab fa-google"></i></div>
+                <div class="cert-icon">
+                    <i class="fab fa-google"></i>
+                </div>
                 <h3 class="cert-title">Google UX Design Certificate</h3>
                 <p class="cert-issuer">Google — Coursera</p>
                 <span class="cert-year">2024</span>
@@ -411,7 +436,9 @@ window.addEventListener('load', () => {
                 </div>
             </div>
             <div class="cert-card reveal delay-1" data-tilt>
-                <div class="cert-icon"><i class="fab fa-meta"></i></div>
+                <div class="cert-icon">
+                    <i class="fab fa-meta"></i>
+                </div>
                 <h3 class="cert-title">Front-End Developer Professional</h3>
                 <p class="cert-issuer">Meta — Coursera</p>
                 <span class="cert-year">2024</span>
@@ -420,7 +447,9 @@ window.addEventListener('load', () => {
                 </div>
             </div>
             <div class="cert-card reveal delay-2" data-tilt>
-                <div class="cert-icon"><i class="fab fa-aws"></i></div>
+                <div class="cert-icon">
+                    <i class="fab fa-aws"></i>
+                </div>
                 <h3 class="cert-title">AWS Cloud Practitioner</h3>
                 <p class="cert-issuer">Amazon Web Services</p>
                 <span class="cert-year">2025</span>
@@ -429,7 +458,9 @@ window.addEventListener('load', () => {
                 </div>
             </div>
             <div class="cert-card reveal delay-3" data-tilt>
-                <div class="cert-icon"><i class="fas fa-code"></i></div>
+                <div class="cert-icon">
+                    <i class="fas fa-code"></i>
+                </div>
                 <h3 class="cert-title">JavaScript Algorithms & Data Structures</h3>
                 <p class="cert-issuer">freeCodeCamp</p>
                 <span class="cert-year">2023</span>
@@ -525,7 +556,7 @@ window.addEventListener('load', () => {
                     <li><a href="#hero">Beranda</a></li>
                     <li><a href="#about">About Me</a></li>
                     <li><a href="#skills">Keahlian</a></li>
-                    <li><a href="#certificates">Certificates</a></li>
+					<li><a href="#certificates">Certificates</a></li>
                     <li><a href="#projects">Project</a></li>
                     <li><a href="#contact">Kontak</a></li>
                 </ul>
@@ -536,11 +567,13 @@ window.addEventListener('load', () => {
                     <li><a href="#">Web Development With AI</a></li>
                     <li><a href="#">UI / UX Design With AI</a></li>
                     <li><a href="#">Mobile App With AI</a></li>
+                    <!--<li><a href="#">Konsultasi IT</a></li>-->
                 </ul>
             </div>
         </div>
         <div class="footer-btm">
             <p>© 2026 <span class="aksen">Rsd</span>. Semua hak dilindungi.</p>
+            <!--<p>Dibuat dengan <span class="aksen">♥</span> di Jakarta Indonesia</p>-->
         </div>
     </div>
 </footer>
@@ -556,7 +589,9 @@ window.addEventListener('load', () => {
     </button>
     <div id="chat-panel" class="chat-hidden">
         <div class="chat-header">
-            <div class="chat-avatar"><i class="fas fa-robot"></i></div>
+            <div class="chat-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
             <div class="chat-header-info">
                 <h4>AI Asisten</h4>
                 <p>RsdAI - Portfolio Assistant</p>
@@ -575,7 +610,9 @@ window.addEventListener('load', () => {
 <div id="demo-modal" class="modal-overlay">
     <div class="modal-content">
         <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
-        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-body" id="modal-body">
+            <!-- Konten dinamis dari JS -->
+        </div>
     </div>
 </div>
 
@@ -583,45 +620,12 @@ window.addEventListener('load', () => {
 <script src="js/script.js"></script>
 
 <script>
-// ========== OVERRIDE UNTUK MEMAKSA DARK MODE ==========
-// Kode ini akan berjalan SETELAH script.js asli, sehingga menimpa efek toggle dan localStorage
-(function() {
-    // 1. Hapus semua data theme dari localStorage
-    localStorage.removeItem('tema-porto');
-    
-    // 2. Pastikan atribut data-theme="dark" di html
-    document.documentElement.setAttribute('data-theme', 'dark');
-    
-    // 3. Nonaktifkan tombol theme toggle (hapus event listener dengan mengganti tombol)
-    const themeBtn = document.getElementById('theme-toggle');
-    if (themeBtn) {
-        // Clone dan ganti untuk menghilangkan semua event listener lama
-        const newBtn = themeBtn.cloneNode(true);
-        themeBtn.parentNode.replaceChild(newBtn, themeBtn);
-        // Sembunyikan tombol (opsional, tapi CSS sudah menyembunyikan)
-        // newBtn.style.display = 'none';
-    }
-    
-    // 4. Jika ada kode yang mencoba mengubah tema secara dinamis, kita cegah dengan mutation observer
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'data-theme') {
-                if (document.documentElement.getAttribute('data-theme') !== 'dark') {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                }
-            }
-        });
-    });
-    observer.observe(document.documentElement, { attributes: true });
-})();
-</script>
-
-<script>
-// ========== TYPING EFFECT (fallback jika di script.js tidak jalan) ==========
-if (document.getElementById('typed-text') && !document.getElementById('typed-text').innerText) {
+document.addEventListener('DOMContentLoaded', function() {
     const listKata = ['Full-Stack Developer', 'UI / UX Designer', 'Problem Solver', 'Creative Thinker'];
     let idxKata = 0, idxChar = 0, hapus = false;
     const elKetik = document.getElementById('typed-text');
+    if (!elKetik) return;
+    
     function animasiKetik() {
         const kata = listKata[idxKata];
         if (hapus) {
@@ -645,8 +649,8 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
             setTimeout(animasiKetik, 88);
         }
     }
-    setTimeout(animasiKetik, 800);
-}
+    animasiKetik();
+});
 </script>
 
 <script>
@@ -655,6 +659,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     const container = document.getElementById('bg-3d');
     if (!container) return;
     
+    // Scene, Camera, Renderer
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x020210);
     scene.fog = new THREE.FogExp2(0x020210, 0.0004);
@@ -667,6 +672,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     renderer.setClearColor(0x020210, 1);
     container.appendChild(renderer.domElement);
     
+    // ========== 1. BINTANG LATAR (ribuan) ==========
     const starFieldGeo = new THREE.BufferGeometry();
     const starCount = 4000;
     const starPositions = new Float32Array(starCount * 3);
@@ -680,6 +686,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     const starField = new THREE.Points(starFieldGeo, starFieldMat);
     scene.add(starField);
     
+    // ========== 2. BINTANG TERANG (berkedip) ==========
     const brightStarGeo = new THREE.BufferGeometry();
     const brightCount = 800;
     const brightPos = new Float32Array(brightCount * 3);
@@ -693,6 +700,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     const brightStars = new THREE.Points(brightStarGeo, brightStarMat);
     scene.add(brightStars);
     
+    // ========== 3. NEBULA WARNA (biru, pink, ungu) ==========
     const nebulaCount = 1200;
     const nebulaGeo = new THREE.BufferGeometry();
     const nebulaPositions = new Float32Array(nebulaCount * 3);
@@ -701,10 +709,11 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
         nebulaPositions[i*3] = (Math.random() - 0.5) * 900;
         nebulaPositions[i*3+1] = (Math.random() - 0.5) * 600;
         nebulaPositions[i*3+2] = (Math.random() - 0.5) * 500 - 200;
+        
         const type = Math.random();
-        if (type < 0.34) { nebulaColors[i*3] = 0.9; nebulaColors[i*3+1] = 0.3; nebulaColors[i*3+2] = 0.6; }
-        else if (type < 0.67) { nebulaColors[i*3] = 0.2; nebulaColors[i*3+1] = 0.5; nebulaColors[i*3+2] = 1.0; }
-        else { nebulaColors[i*3] = 0.7; nebulaColors[i*3+1] = 0.2; nebulaColors[i*3+2] = 0.9; }
+        if (type < 0.34) { nebulaColors[i*3] = 0.9; nebulaColors[i*3+1] = 0.3; nebulaColors[i*3+2] = 0.6; }   // pink
+        else if (type < 0.67) { nebulaColors[i*3] = 0.2; nebulaColors[i*3+1] = 0.5; nebulaColors[i*3+2] = 1.0; } // biru
+        else { nebulaColors[i*3] = 0.7; nebulaColors[i*3+1] = 0.2; nebulaColors[i*3+2] = 0.9; }                // ungu
     }
     nebulaGeo.setAttribute('position', new THREE.BufferAttribute(nebulaPositions, 3));
     nebulaGeo.setAttribute('color', new THREE.BufferAttribute(nebulaColors, 3));
@@ -712,6 +721,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     const nebulaCloud = new THREE.Points(nebulaGeo, nebulaMat);
     scene.add(nebulaCloud);
     
+    // ========== 4. GALAKSI SPIRAL (partikel) ==========
     const galaxyCount = 4000;
     const galaxyGeo = new THREE.BufferGeometry();
     const galaxyPos = new Float32Array(galaxyCount * 3);
@@ -732,6 +742,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     galaxySpiral.position.set(-330, 60, -100);
     scene.add(galaxySpiral);
     
+    // ========== 5. BINTANG JATUH (sistem) ==========
     const shootingStars = [];
     const starFallCount = 25;
     for (let i = 0; i < starFallCount; i++) {
@@ -753,6 +764,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     function spawnShootingStar() {
         const available = shootingStars.find(s => !s.active);
         if (!available) return;
+        
         available.startX = (Math.random() - 0.5) * 700;
         available.startY = (Math.random() - 0.5) * 500 + 200;
         available.startZ = (Math.random() - 0.5) * 300 - 50;
@@ -763,6 +775,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
         available.active = true;
         available.mesh.position.set(available.startX, available.startY, available.startZ);
         available.mesh.visible = true;
+        
         setTimeout(() => {
             if (available.active) {
                 available.active = false;
@@ -774,6 +787,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
         if (Math.random() < 0.45) spawnShootingStar();
     }, 1800);
     
+    // ========== 6. CAHAYA & LIGHTING ==========
     const ambientLight = new THREE.AmbientLight(0x111122);
     scene.add(ambientLight);
     const backLight = new THREE.PointLight(0x335588, 0.6);
@@ -783,6 +797,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     colorLight.position.set(100, 80, 100);
     scene.add(colorLight);
     
+    // ========== 7. ANIMASI & GERAKAN KAMERA ==========
     let time = 0;
     let mouseX = 0, mouseY = 0;
     document.addEventListener('mousemove', (e) => {
@@ -793,14 +808,19 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     function animate() {
         requestAnimationFrame(animate);
         time += 0.003;
+        
+        // Rotasi bintang dan nebula
         starField.rotation.y += 0.0002;
         starField.rotation.x += 0.0001;
         brightStars.rotation.y -= 0.00015;
         nebulaCloud.rotation.y += 0.0004;
         nebulaCloud.rotation.x += 0.0002;
+        
+        // Galaksi berputar pelan
         galaxySpiral.rotation.y += 0.002;
         galaxySpiral.rotation.x = Math.sin(time * 0.2) * 0.1;
         
+        // Update bintang jatuh
         shootingStars.forEach(star => {
             if (star.active) {
                 star.progress += 0.022;
@@ -816,9 +836,12 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
                 }
             }
         });
+        
+        // Gerakan kamera halus mengikuti mouse
         camera.position.x += (mouseX * 35 - camera.position.x) * 0.03;
         camera.position.y += (-mouseY * 25 - camera.position.y) * 0.03;
         camera.lookAt(0, 0, 0);
+        
         renderer.render(scene, camera);
     }
     animate();
@@ -832,7 +855,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
 </script>
 
 <script>
-/* ========== AI CHATBOT (FULL LOCAL) ========== */
+/* ========== AI CHATBOT (FULL LOCAL - LANGSUNG DI HTML) ========== */
 (function() {
     const toggle = document.getElementById('chat-toggle');
     const panel = document.getElementById('chat-panel');
@@ -842,10 +865,14 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     const messages = document.getElementById('chat-messages');
     const badge = document.querySelector('.chat-badge');
     
-    if (!toggle || !panel) return;
+    if (!toggle || !panel) {
+        console.log('Elemen chatbot tidak ditemukan');
+        return;
+    }
     
     let isOpen = false;
     
+    // Database pengetahuan
     const info = {
         nama: 'Mohamad Rosyadi',
         panggilan: 'Rosyad atau Bos',
@@ -860,6 +887,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     
     function getResponse(msg) {
         const t = msg.toLowerCase();
+        
         if (/(hai|halo|hi|pagi|siang|malam|assalam|helo|hello|hy|hey)/.test(t)) 
             return 'Halo Bos! 👋 Ada yang bisa gue bantu? Tanyain aja tentang skill, proyek, atau kontak portfolio ini.';
         if (/(nama|siapa|kamu siapa|pemilik|owner|rosyad)/.test(t)) 
@@ -884,6 +912,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
             return `Sama-sama Bos! Senang bisa bantu. Kapan-kapan cobain project saya ya 😎`;
         if (/(lucu|joke|lawak|gokil|humor|ngakak)/.test(t)) 
             return `Kenapa developer suka kopi? Karena kopi bikin mereka "java" jadi lancar! ☕😂`;
+        
         return `Wah Bos, saya kurang paham tentang "${msg}". Coba tanya tentang: nama, skill, proyek, kontak, atau ketersediaan saya ya. 📌 Atau langsung email ke ${info.kontak.split('\n')[0]} untuk diskusi lebih lanjut!`;
     }
     
@@ -920,11 +949,14 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
     function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
+        
         addMessage(text, 'user');
         input.value = '';
         input.disabled = true;
         send.disabled = true;
+        
         const typing = showTyping();
+        
         setTimeout(() => {
             removeTyping(typing);
             const reply = getResponse(text);
@@ -935,6 +967,7 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
         }, 300);
     }
     
+    // Event listeners
     toggle.addEventListener('click', () => {
         isOpen = !isOpen;
         if (isOpen) {
@@ -949,9 +982,17 @@ if (document.getElementById('typed-text') && !document.getElementById('typed-tex
         }
     });
     
-    if (close) close.addEventListener('click', () => { isOpen = false; panel.classList.add('chat-hidden'); });
+    if (close) {
+        close.addEventListener('click', () => {
+            isOpen = false;
+            panel.classList.add('chat-hidden');
+        });
+    }
+    
     if (send) send.addEventListener('click', sendMessage);
-    if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    if (input) input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
 })();
 </script>
 
