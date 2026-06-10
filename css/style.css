@@ -300,25 +300,35 @@ footer { background:var(--bg-primary); border-top:1px solid var(--card-border); 
     .c-form { padding:28px 20px; }
     .footer-inner { flex-direction:column; }
     .hero-stats { gap:28px; }
-    /* Perbaikan chatbot untuk HP */
+    
+    /* PERBAIKAN CHATBOT UNTUK HP */
     #ai-chatbot {
-        bottom: 20px;
-        right: 20px;
-    }
-    #chat-panel {
-        width: calc(100vw - 40px);
-        max-width: 340px;
-        right: 20px;
-        bottom: 90px;
-        left: auto;
+        position: fixed !important;
+        bottom: 16px !important;
+        right: 16px !important;
+        left: auto !important;
+        z-index: 9999 !important;
     }
     #chat-toggle {
-        width: 55px;
-        height: 55px;
-        font-size: 22px;
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 20px !important;
+        right: 0 !important;
+        bottom: 0 !important;
+    }
+    #chat-panel {
+        position: fixed !important;
+        width: calc(100vw - 32px) !important;
+        max-width: 340px !important;
+        right: 16px !important;
+        bottom: 80px !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        margin: 0 !important;
     }
     .chat-messages {
-        max-height: 280px;
+        max-height: 280px !important;
     }
 }
 @media (max-width:480px) {
@@ -327,7 +337,7 @@ footer { background:var(--bg-primary); border-top:1px solid var(--card-border); 
     .proj-header { flex-direction:column; align-items:flex-start; }
 }
 
-/* Sembunyikan tombol theme toggle karena dark mode permanen */
+/* SEMBUNYIKAN TOMBOL DARK MODE (karena tidak diperlukan) */
 #theme-toggle {
     display: none !important;
 }
